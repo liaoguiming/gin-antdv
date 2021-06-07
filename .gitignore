@@ -1,0 +1,19 @@
+# golang
+/server/config.yaml
+/server/go.mod
+/server/go.sum
+/server/main.exe
+/server/log
+/server/docs
+/server/docker/data
+
+# antd vue
+/web/node_modules
+/web/dist
+# Editor directories and files
+/.git
+/.idea
+# Log files
+
+# Other
+
