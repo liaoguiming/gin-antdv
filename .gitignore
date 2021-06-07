@@ -4,7 +4,6 @@
 /server/go.sum
 /server/main.exe
 /server/log
-/server/docs
 /server/docker/data
 
 # antd vue
