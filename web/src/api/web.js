@@ -31,3 +31,11 @@ export const getIndexArticleList = (data) => {
     data
   })
 }
+
+export const getProvince = (data) => {
+  return service({
+    url: '/api/',
+    method: 'get',
+    data
+  })
+}

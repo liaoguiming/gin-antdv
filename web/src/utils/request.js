@@ -1,7 +1,7 @@
 import axios from 'axios' // 引入axios
 import { Message, Loading } from 'element-ui'
 const service = axios.create({
-  baseURL: 'https://www.imliaogm.com',
+  baseURL: 'http://localhost:8088',
   timeout: 99999
 })
 let acitveAxios = 0
