@@ -1,19 +1,26 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import VuexPersistence from 'vuex-persist'
+
+import app from './modules/app'
+import user from './modules/user'
+
+// default router permission control
+// import permission from './modules/permission'
+
+// dynamic router permission control (Experimental)
+import permission from './modules/async-router'
+import getters from './getters'
 
 Vue.use(Vuex)
 
-// 持久化
-const vuexLocal = new VuexPersistence({
-  storage: window.localStorage
-})
-// 状态存储
-export const store = new Vuex.Store({
-  state: {
-    url: 'https://www.imliaogm.com'
+export default new Vuex.Store({
+  modules: {
+    app,
+    user,
+    permission
   },
-  plugins: [vuexLocal.plugin]
+  state: {},
+  mutations: {},
+  actions: {},
+  getters
 })
-
-export default store

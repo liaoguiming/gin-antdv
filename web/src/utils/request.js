@@ -1,76 +1,72 @@
-import axios from 'axios' // 引入axios
-import { Message, Loading } from 'element-ui'
-const service = axios.create({
-  baseURL: 'http://localhost:8088',
-  timeout: 99999
+import axios from 'axios'
+import store from '@/store'
+import storage from 'store'
+import notification from 'ant-design-vue/es/notification'
+import { VueAxios } from './axios'
+import { ACCESS_TOKEN } from '@/store/mutation-types'
+
+// 创建 axios 实例
+const request = axios.create({
+  // API 请求的默认前缀
+  baseURL: process.env.VUE_APP_API_BASE_URL,
+  timeout: 6000 // 请求超时时间
 })
-let acitveAxios = 0
-let loadingInstance
-let timer
-const showLoading = () => {
-  acitveAxios++
-  if (timer) {
-    clearTimeout(timer)
-  }
-  timer = setTimeout(() => {
-    if (acitveAxios > 0) {
-      loadingInstance = Loading.service({ fullscreen: true })
-    }
-  }, 400)
-}
 
-const closeLoading = () => {
-  acitveAxios--
-  if (acitveAxios <= 0) {
-    clearTimeout(timer)
-    loadingInstance && loadingInstance.close()
-  }
-}
-// http request 拦截器
-service.interceptors.request.use(
-  config => {
-    showLoading()
-    config.data = JSON.stringify(config.data)
-    config.headers = {
-      'Content-Type': 'application/json'
-    }
-    return config
-  },
-  error => {
-    closeLoading()
-    Message({
-      showClose: true,
-      message: error,
-      type: 'error'
-    })
-    return Promise.reject(error)
-  }
-)
-
-// http response 拦截器
-service.interceptors.response.use(
-  response => {
-    closeLoading()
-    if (response.data.code === 0 || response.headers.success === 'true') {
-      return response.data
-    } else {
-      Message({
-        showClose: true,
-        message: response.data.msg || decodeURI(response.headers.msg),
-        type: 'error'
+// 异常拦截处理器
+const errorHandler = (error) => {
+  if (error.response) {
+    const data = error.response.data
+    // 从 localstorage 获取 token
+    const token = storage.get(ACCESS_TOKEN)
+    if (error.response.status === 403) {
+      notification.error({
+        message: 'Forbidden',
+        description: data.message
       })
-      return Promise.reject(response.data.msg)
     }
-  },
-  error => {
-    closeLoading()
-    Message({
-      showClose: true,
-      message: error,
-      type: 'error'
-    })
-    return Promise.reject(error)
+    if (error.response.status === 401 && !(data.result && data.result.isLogin)) {
+      notification.error({
+        message: 'Unauthorized',
+        description: 'Authorization verification failed'
+      })
+      if (token) {
+        store.dispatch('Logout').then(() => {
+          setTimeout(() => {
+            window.location.reload()
+          }, 1500)
+        })
+      }
+    }
   }
-)
+  return Promise.reject(error)
+}
 
-export default service
+// request interceptor
+request.interceptors.request.use(config => {
+  const token = storage.get(ACCESS_TOKEN)
+  // 如果 token 存在
+  // 让每个请求携带自定义 token 请根据实际情况自行修改
+  if (token) {
+    config.headers['Access-Token'] = token
+  }
+  return config
+}, errorHandler)
+
+// response interceptor
+request.interceptors.response.use((response) => {
+  return response.data
+}, errorHandler)
+
+const installer = {
+  vm: {},
+  install (Vue) {
+    Vue.use(VueAxios, request)
+  }
+}
+
+export default request
+
+export {
+  installer as VueAxios,
+  request as axios
+}
