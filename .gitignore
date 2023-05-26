@@ -9,6 +9,7 @@
 # antd vue
 /web/node_modules
 /web/dist
+/web/yarn.lock
 # Editor directories and files
 /.git
 /.idea
